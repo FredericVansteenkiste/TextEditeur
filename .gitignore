@@ -1,0 +1,4 @@
+# On ne cherche pas à faire le suivi du répertoire build
+build/
+# On ne cherche pas à faire le suivi des fichiers de configuration
+TextEditeur.pro.*
