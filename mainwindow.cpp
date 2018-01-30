@@ -8,7 +8,7 @@ MainWindow::MainWindow():m_pqTextEdit(new QPlainTextEdit),
    createActions();
    createStatusBar();
 
-   readSettings();
+   readGeometry();
 
    connect(m_pqTextEdit->document(), &QTextDocument::contentsChanged,
            this,                     &MainWindow::documentWasModified);
@@ -18,15 +18,19 @@ MainWindow::MainWindow():m_pqTextEdit(new QPlainTextEdit),
 
    // J'applique une police courier pour l'éditeur
    QTextCharFormat qTextFormat = m_pqTextEdit->currentCharFormat();
-   qTextFormat.setFont(QFont("Courier New", 10));
+   QFont qFont("Courier New", 10);
+   QFontMetrics qFontMetrics(qFont);
+   qTextFormat.setFont(qFont);
    m_pqTextEdit->setCurrentCharFormat(qTextFormat);
+   m_pqTextEdit->setLineWrapMode(QPlainTextEdit::NoWrap);
+   m_pqTextEdit->setTabStopWidth(3 * qFontMetrics.width(' '));
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
    if(maybeSave() == true)
    {
-      writeSettings();
+      writeGeometry();
       event->accept();
    }
    else
@@ -48,10 +52,15 @@ void MainWindow::open(void)
 {
    if(maybeSave() == true)
    {
-      QString fileName = QFileDialog::getOpenFileName(this);
+      QDir qWorkingDirectory = ReadWorkingDirectory();
+      QString fileName = QFileDialog::getOpenFileName(
+                                             this,
+                                             QString(),
+                                             qWorkingDirectory.absolutePath());
       if(fileName.isEmpty() == false)
       {
          loadFile(fileName);
+         WriteWorkingDirectory(QDir(fileName));
       }
    }
 }
@@ -86,7 +95,7 @@ void MainWindow::documentWasModified(void)
     setWindowModified(m_pqTextEdit->document()->isModified());
 }
 
-void MainWindow::extractEnum(void)
+void MainWindow::ExtractEnum(void)
 {
    // Je récupère les données et je les mets en forme
    QString qstrText = m_pqTextEdit->toPlainText();
@@ -98,6 +107,11 @@ void MainWindow::extractEnum(void)
    }
    qstrText.replace("Not used",      "Not_used",      Qt::CaseInsensitive);
    qstrText.replace("Not available", "Not_available", Qt::CaseInsensitive);
+   qstrText.replace("Driver Only",   "Driver_Only",   Qt::CaseInsensitive);
+   qstrText.replace("Driver and Windows",
+                    "Driver_and_Windows",
+                    Qt::CaseInsensitive);
+   qstrText.replace("Windows Only",  "Windows_Only",  Qt::CaseInsensitive);
    QStringList qlstrText = qstrText.split(" ");
 
    // Je range ces données dans un QMap
@@ -158,8 +172,81 @@ void MainWindow::extractEnum(void)
    m_pqTextEdit->document()->setModified(true);
 }
 
+void MainWindow::ArrangeDirectory(void)
+{
+   QString qstrFiles(m_pqTextEdit->toPlainText());
+   QStringList qlstrLines = qstrFiles.split("\n");
+   QFileInfo qFileInfo(m_qstrCurFile);
+   QDir qSourceDirectory(qFileInfo.absolutePath());
+   if(qSourceDirectory.cd("generated") == false)
+   {
+      QMessageBox::critical(this,
+                            tr("Error"),
+                            tr("The sub-directory \"generated\" "
+                               "was not found"));
+      return;
+   }
+   if(qSourceDirectory.cd("Converted.png") == false)
+   {
+      QMessageBox::critical(this,
+                            tr("Error"),
+                            tr("The sub-directory \"generated\\Converted.png\" "
+                               "was not found"));
+      return;
+   }
+   if(qSourceDirectory.cd("pictures") == false)
+   {
+      QMessageBox::critical(this,
+                            tr("Error"),
+                            tr("The sub-directory \"generated\\Converted.png\\"
+                               "pictures\" was not found"));
+      return;
+   }
+
+   for(int i = 0; i < qlstrLines.size(); i++)
+   {
+      int iIndDeb = qlstrLines[i].indexOf("<Image ");
+      int iIndFin = qlstrLines[i].indexOf(" />");
+      if(  (iIndDeb == -1)
+         ||(iIndFin == -1)
+         ||((iIndFin - iIndDeb) < 0))
+      {
+         continue;
+      }
+
+      QString qstrLine(qlstrLines[i].mid(iIndDeb + 7, iIndFin - iIndDeb - 7));
+      iIndDeb = qstrLine.indexOf("paletteID");
+      iIndFin = qstrLine.indexOf("\"", iIndDeb + 11);
+      QString qstrPaletteID(qstrLine.mid(iIndDeb + 11, iIndFin - iIndDeb - 11));
+      if(qstrPaletteID == "65535")
+      {
+         continue;
+      }
+      iIndDeb = qstrLine.indexOf("colorFormat");
+      iIndFin = qstrLine.indexOf("\"", iIndDeb + 13);
+      QString qstrColorFormat(qstrLine.mid(iIndDeb + 13,
+                                           iIndFin - iIndDeb - 13));
+      iIndDeb = qstrLine.indexOf("name");
+      iIndFin = qstrLine.indexOf("\"", iIndDeb + 6);
+      QString qstrNameFile(qstrLine.mid(iIndDeb + 6,
+                                        iIndFin - iIndDeb - 6));
+      qSourceDirectory.mkdir(qstrPaletteID + "_" + qstrColorFormat);
+      QDir qDestDirectory(qSourceDirectory);
+      qDestDirectory.cd(qstrPaletteID + "_" + qstrColorFormat);
+      QFile qFile(  qSourceDirectory.absolutePath()
+                  + "/"
+                  + qstrNameFile
+                  + ".png");
+      qFile.rename(  qDestDirectory.absolutePath()
+                     + "/"
+                     + qstrNameFile
+                     + ".png");
+   }
+}
+
 void MainWindow::createActions(void)
 {
+   //***************************************************************************
    // Création du menu File
    QMenu* fileMenu = menuBar()->addMenu(tr("&File"));
    QToolBar* fileToolBar = addToolBar(tr("File"));
@@ -208,6 +295,7 @@ void MainWindow::createActions(void)
    exitAct->setShortcuts(QKeySequence::Quit);
    exitAct->setStatusTip(tr("Exit the application"));
 
+   //***************************************************************************
    // Création du menu édit
    QMenu* editMenu = menuBar()->addMenu(tr("&Edit"));
    QToolBar* editToolBar = addToolBar(tr("Edit"));
@@ -237,7 +325,7 @@ void MainWindow::createActions(void)
    QAction* pasteAct = new QAction(pasteIcon, tr("&Paste"), this);
    pasteAct->setShortcuts(QKeySequence::Paste);
    pasteAct->setStatusTip(tr("Paste the clipboard's contents into the current "
-                              "selection"));
+                             "selection"));
    connect(pasteAct, &QAction::triggered, m_pqTextEdit, &QPlainTextEdit::paste);
    editMenu->addAction(pasteAct);
    editToolBar->addAction(pasteAct);
@@ -249,13 +337,30 @@ void MainWindow::createActions(void)
    connect(m_pqTextEdit, &QPlainTextEdit::copyAvailable,
            copyAct,      &QAction::setEnabled);
 
+   //***************************************************************************
    // Création du menu Macro
    QMenu* macroMenu = menuBar()->addMenu(tr("&Macro"));
-   QAction* extractEnum = new QAction(tr("Enum extraction"), this);
-   extractEnum->setStatusTip(tr("Convert the enum from a dbc file into a "
+   QToolBar* macroToolBar = addToolBar(tr("Macro"));
+
+   QAction* pqExtractEnum = new QAction(QIcon(":/images/ToEnumerate.png"),
+                                        tr("Enum extraction"),
+                                        this);
+   pqExtractEnum->setStatusTip(tr("Convert the enum from a dbc file into a "
                                 "structured text code"));
-   macroMenu->addAction(extractEnum);
-   connect(extractEnum, &QAction::triggered, this, &MainWindow::extractEnum);
+   macroMenu->addAction(pqExtractEnum);
+   macroToolBar->addAction(pqExtractEnum);
+   connect(pqExtractEnum, &QAction::triggered, this, &MainWindow::ExtractEnum);
+
+   QAction* pqArrangeDirectory = new QAction(QIcon(":/images/folder.png"),
+                                             tr("Rearrange directory"),
+                                             this);
+   pqArrangeDirectory->setStatusTip(tr("Organize the directory of the picture "
+                                       "in function of the information in "
+                                       "xml"));
+   macroMenu->addAction(pqArrangeDirectory);
+   macroToolBar->addAction(pqArrangeDirectory);
+   connect(pqArrangeDirectory, &QAction::triggered,
+           this, &MainWindow::ArrangeDirectory);
 }
 
 void MainWindow::createStatusBar(void)
@@ -263,31 +368,47 @@ void MainWindow::createStatusBar(void)
    statusBar()->showMessage(tr("Ready"));
 }
 
-void MainWindow::readSettings(void)
+void MainWindow::readGeometry(void)
 {
-   QSettings settings(QCoreApplication::organizationName(),
-                      QCoreApplication::applicationName());
-   const QByteArray geometry = settings.value("geometry",
-                                              QByteArray()).toByteArray();
-   if(geometry.isEmpty() == true)
+   QSettings qSettings(QCoreApplication::organizationName(),
+                       QCoreApplication::applicationName());
+   const QByteArray qGeometry = qSettings.value("geometry",
+                                                QByteArray()).toByteArray();
+   if(qGeometry.isEmpty() == true)
    {
-      const QRect availableGeometry =
+      const QRect qAvailableGeometry =
                            QApplication::desktop()->availableGeometry(this);
-      resize(availableGeometry.width() / 3, availableGeometry.height() / 2);
-      move((availableGeometry.width() - width()) / 2,
-           (availableGeometry.height() - height()) / 2);
+      resize(qAvailableGeometry.width() / 3, qAvailableGeometry.height() / 2);
+      move((qAvailableGeometry.width() - width()) / 2,
+           (qAvailableGeometry.height() - height()) / 2);
    }
    else
    {
-      restoreGeometry(geometry);
+      restoreGeometry(qGeometry);
    }
 }
 
-void MainWindow::writeSettings(void)
+void MainWindow::writeGeometry(void)
 {
-    QSettings settings(QCoreApplication::organizationName(),
+    QSettings qSettings(QCoreApplication::organizationName(),
+                        QCoreApplication::applicationName());
+    qSettings.setValue("geometry", saveGeometry());
+}
+
+QDir MainWindow::ReadWorkingDirectory(void)
+{
+   QSettings qSettings(QCoreApplication::organizationName(),
+                      QCoreApplication::applicationName());
+   QString qstrDir = qSettings.value("WorkingDirectory").toString();
+
+   return QDir(qstrDir);
+}
+
+void MainWindow::WriteWorkingDirectory(const QDir& qWorkingDirectory)
+{
+   QSettings qSettings(QCoreApplication::organizationName(),
                        QCoreApplication::applicationName());
-    settings.setValue("geometry", saveGeometry());
+   qSettings.setValue("WorkingDirectory", qWorkingDirectory.absolutePath());
 }
 
 bool MainWindow::maybeSave(void)
@@ -361,6 +482,7 @@ bool MainWindow::saveFile(const QString& fileName)
 
    setCurrentFile(fileName);
    statusBar()->showMessage(tr("File saved"), 2000);
+   WriteWorkingDirectory(QDir(fileName));
 
    return true;
 }

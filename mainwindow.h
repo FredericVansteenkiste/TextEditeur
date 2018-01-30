@@ -21,7 +21,8 @@ private slots:
    bool save(void);
    bool saveAs(void);
    void documentWasModified(void);
-   void extractEnum(void);
+   void ExtractEnum(void);
+   void ArrangeDirectory(void);
 
 private:
    QPlainTextEdit* m_pqTextEdit;
@@ -29,8 +30,10 @@ private:
 
    void createActions(void);
    void createStatusBar(void);
-   void readSettings(void);
-   void writeSettings(void);
+   void readGeometry(void);
+   void writeGeometry(void);
+   QDir ReadWorkingDirectory(void);
+   void WriteWorkingDirectory(const QDir& qWorkingDirectory);
    bool maybeSave(void);
    bool saveFile(const QString& fileName);
    void setCurrentFile(const QString& fileName);
