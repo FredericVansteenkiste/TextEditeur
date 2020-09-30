@@ -112,6 +112,7 @@ void MainWindow::ExtractEnum(void)
                     "Driver_and_Windows",
                     Qt::CaseInsensitive);
    qstrText.replace("Windows Only",  "Windows_Only",  Qt::CaseInsensitive);
+   qstrText.replace("/",             "_",  Qt::CaseInsensitive);
    QStringList qlstrText = qstrText.split(" ");
 
    // Je range ces données dans un QMap
@@ -206,7 +207,7 @@ void MainWindow::ArrangeDirectory(void)
    for(int i = 0; i < qlstrLines.size(); i++)
    {
       int iIndDeb = qlstrLines[i].indexOf("<Image ");
-      int iIndFin = qlstrLines[i].indexOf(" />");
+      int iIndFin = qlstrLines[i].indexOf("/>");
       if(  (iIndDeb == -1)
          ||(iIndFin == -1)
          ||((iIndFin - iIndDeb) < 0))
