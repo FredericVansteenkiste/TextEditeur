@@ -2,3 +2,5 @@
 build/
 # On ne cherche pas à faire le suivi des fichiers de configuration
 TextEditeur.pro.*
+# Le fichier suivant me sert de fichier de log
+LogMsg

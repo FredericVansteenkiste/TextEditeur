@@ -23,7 +23,7 @@ MainWindow::MainWindow():m_pqTextEdit(new QPlainTextEdit),
    qTextFormat.setFont(qFont);
    m_pqTextEdit->setCurrentCharFormat(qTextFormat);
    m_pqTextEdit->setLineWrapMode(QPlainTextEdit::NoWrap);
-   m_pqTextEdit->setTabStopWidth(3 * qFontMetrics.width(' '));
+   m_pqTextEdit->setTabStopDistance(3 * qFontMetrics.horizontalAdvance(' '));
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
