@@ -3,6 +3,8 @@
 
 #include <QtWidgets>
 
+#include "xlsxdocument.h"
+
 class MainWindow : public QMainWindow
 {
    Q_OBJECT
@@ -23,6 +25,7 @@ private slots:
    void documentWasModified(void);
    void ExtractEnum(void);
    void ArrangeDirectory(void);
+   void ExtractDataFromAsc(void);
 
 private:
    QPlainTextEdit* m_pqTextEdit;

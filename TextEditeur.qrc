@@ -8,5 +8,6 @@
         <file>images/save.png</file>
         <file>images/folder.png</file>
         <file>images/ToEnumerate.png</file>
+        <file>images/MacroAsc2xlsx.png</file>
     </qresource>
 </RCC>
