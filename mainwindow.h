@@ -3,9 +3,6 @@
 
 #include <QtWidgets>
 
-// Ce commentaire sert uniquement à vérifier que je parviens à faire un git
-// push
-
 class MainWindow : public QMainWindow
 {
    Q_OBJECT
