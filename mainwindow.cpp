@@ -261,7 +261,7 @@ void MainWindow::ExtractDataFromAsc(void)
       }
       else
       {
-         loadFile(qstrInputFileName);
+//         loadFile(qstrInputFileName);
          WriteWorkingDirectory(QDir(qstrInputFileName));
       }
    }
@@ -282,44 +282,54 @@ void MainWindow::ExtractDataFromAsc(void)
    QFile::remove(qstrOutputFileName);
    QXlsx::Document xlsx(qstrOutputFileName);
    xlsx.addSheet("FiltreGaugePasseBas");
-   quint16 qu16IndiceInPB(1);
-   xlsx.write(qu16IndiceInPB, 2, "Input Signal");
-   xlsx.write(qu16IndiceInPB, 3, "Filtre passe bas");
-   xlsx.write(qu16IndiceInPB, 4, "Déduction du niveau");
-   xlsx.write(qu16IndiceInPB, 5, "Traitement des variations");
-   xlsx.write(qu16IndiceInPB, 6, "Convertion en %");
-   qu16IndiceInPB++;
+   quint32 qu32IndiceInPB(1);
+   xlsx.write(qu32IndiceInPB, 2, "Input Signal");
+   xlsx.write(qu32IndiceInPB, 3, "Filtre passe bas");
+   xlsx.write(qu32IndiceInPB, 4, "Déduction du niveau");
+   xlsx.write(qu32IndiceInPB, 5, "Traitement des variations");
+   xlsx.write(qu32IndiceInPB, 6, "Convertion en %");
+   qu32IndiceInPB++;
    xlsx.addSheet("FiltreGaugeValMin_10s");
-   quint16 qu16IndiceInMin10s(1);
-   xlsx.write(qu16IndiceInMin10s, 2, "Input Signal");
-   xlsx.write(qu16IndiceInMin10s, 3, "Filtre min value sur 10s");
-   xlsx.write(qu16IndiceInMin10s, 4, "Déduction du niveau");
-   xlsx.write(qu16IndiceInMin10s, 5, "Traitement des variations");
-   xlsx.write(qu16IndiceInMin10s, 6, "Convertion en %");
-   qu16IndiceInMin10s++;
+   quint32 qu32IndiceInMin10s(1);
+   xlsx.write(qu32IndiceInMin10s, 2, "Input Signal");
+   xlsx.write(qu32IndiceInMin10s, 3, "Filtre min value sur 10s");
+   xlsx.write(qu32IndiceInMin10s, 4, "Déduction du niveau");
+   xlsx.write(qu32IndiceInMin10s, 5, "Traitement des variations");
+   xlsx.write(qu32IndiceInMin10s, 6, "Convertion en %");
+   qu32IndiceInMin10s++;
    xlsx.addSheet("FiltreGaugeValMin_60s");
-   quint16 qu16IndiceInMin60s(1);
-   xlsx.write(qu16IndiceInMin60s, 2, "Input Signal");
-   xlsx.write(qu16IndiceInMin60s, 3, "Filtre min value sur 60s");
-   xlsx.write(qu16IndiceInMin60s, 4, "Déduction du niveau");
-   xlsx.write(qu16IndiceInMin60s, 5, "Traitement des variations");
-   xlsx.write(qu16IndiceInMin60s, 6, "Convertion en %");
-   qu16IndiceInMin60s++;
+   quint32 qu32IndiceInMin60s(1);
+   xlsx.write(qu32IndiceInMin60s, 2, "Input Signal");
+   xlsx.write(qu32IndiceInMin60s, 3, "Filtre min value sur 60s");
+   xlsx.write(qu32IndiceInMin60s, 4, "Déduction du niveau");
+   xlsx.write(qu32IndiceInMin60s, 5, "Traitement des variations");
+   xlsx.write(qu32IndiceInMin60s, 6, "Convertion en %");
+   qu32IndiceInMin60s++;
    xlsx.addSheet("FiltreGaugePasseBasValMin10");
-   quint16 qu16IndiceInMinPB_10s(1);
-   xlsx.write(qu16IndiceInMinPB_10s, 2, "Input Signal");
-   xlsx.write(qu16IndiceInMinPB_10s, 3, "Filtre min value sur 10s");
-   xlsx.write(qu16IndiceInMinPB_10s, 4, "Filtre pass bas sur min value");
-   xlsx.write(qu16IndiceInMinPB_10s, 5, "Déduction du niveau");
-   xlsx.write(qu16IndiceInMinPB_10s, 6, "Traitement des variations");
-   xlsx.write(qu16IndiceInMinPB_10s, 7, "Convertion en %");
-   qu16IndiceInMinPB_10s++;
+   quint32 qu32IndiceInMinPB_10s(1);
+   xlsx.write(qu32IndiceInMinPB_10s, 2, "Input Signal");
+   xlsx.write(qu32IndiceInMinPB_10s, 3, "Filtre min value sur 10s");
+   xlsx.write(qu32IndiceInMinPB_10s, 4, "Filtre pass bas sur min value");
+   xlsx.write(qu32IndiceInMinPB_10s, 5, "Déduction du niveau");
+   xlsx.write(qu32IndiceInMinPB_10s, 6, "Traitement des variations");
+   xlsx.write(qu32IndiceInMinPB_10s, 7, "Convertion en %");
+   qu32IndiceInMinPB_10s++;
+   xlsx.addSheet("FiltreGaugeDoubleFiltre_6s");
+   quint32 qu32IndiceInDoublePB_6s(1);
+   xlsx.write(qu32IndiceInDoublePB_6s, 2, "Input Signal");
+   xlsx.write(qu32IndiceInDoublePB_6s, 3, "Filtre min value sur 6s");
+   xlsx.write(qu32IndiceInDoublePB_6s, 4, "Filtre pass bas fort sur min value");
+   xlsx.write(qu32IndiceInDoublePB_6s, 5, "Déduction du niveau");
+   xlsx.write(qu32IndiceInDoublePB_6s, 6, "Traitement des variations");
+   xlsx.write(qu32IndiceInDoublePB_6s, 7, "Convertion en %");
+   qu32IndiceInDoublePB_6s++;
 
    QTextStream in(&file);
    QString qstrLine;
    bool bIsOK;
    while(in.readLineInto(&qstrLine))
    {
+      qstrLine.prepend(" ");
       while(qstrLine.contains("  "))
       {
          qstrLine.replace("  ", " ");
@@ -341,24 +351,27 @@ void MainWindow::ExtractDataFromAsc(void)
          uint uiLevelPercent = qlstrLineElement[13].toUInt(&bIsOK, 16);
 
          xlsx.selectSheet("FiltreGaugePasseBas");
-         xlsx.write(qu16IndiceInPB, 1, fTime);
-         xlsx.write(qu16IndiceInPB, 2, uiInputValue);
-         xlsx.write(qu16IndiceInPB, 3, uiValueFiltered);
-         xlsx.write(qu16IndiceInPB, 4, uiDeducedLevel);
-         xlsx.write(qu16IndiceInPB, 5, uiVariationTreatment);
-         xlsx.write(qu16IndiceInPB, 6, uiLevelPercent);
-         xlsx.write(qu16IndiceInPB, 7, qlstrLineElement[14]);
+         xlsx.write(qu32IndiceInPB, 1, fTime);
+         xlsx.write(qu32IndiceInPB, 2, uiInputValue);
+         xlsx.write(qu32IndiceInPB, 3, uiValueFiltered);
+         xlsx.write(qu32IndiceInPB, 4, uiDeducedLevel);
+         xlsx.write(qu32IndiceInPB, 5, uiVariationTreatment);
+         xlsx.write(qu32IndiceInPB, 6, uiLevelPercent);
+         xlsx.write(qu32IndiceInPB, 7, qlstrLineElement[14]);
 
          xlsx.selectSheet("FiltreGaugeValMin_10s");
-         xlsx.write(qu16IndiceInPB, 2, uiInputValue);
+         xlsx.write(qu32IndiceInPB, 2, uiInputValue);
 
          xlsx.selectSheet("FiltreGaugeValMin_60s");
-         xlsx.write(qu16IndiceInPB, 2, uiInputValue);
+         xlsx.write(qu32IndiceInPB, 2, uiInputValue);
 
          xlsx.selectSheet("FiltreGaugePasseBasValMin10");
-         xlsx.write(qu16IndiceInPB, 2, uiInputValue);
+         xlsx.write(qu32IndiceInPB, 2, uiInputValue);
 
-         qu16IndiceInPB++;
+         xlsx.selectSheet("FiltreGaugeDoubleFiltre_6s");
+         xlsx.write(qu32IndiceInPB, 2, uiInputValue);
+
+         qu32IndiceInPB++;
       }
       else if(  (qlstrLineElement.size() > 3)
               &&(qlstrLineElement[3] == "101"))
@@ -373,17 +386,17 @@ void MainWindow::ExtractDataFromAsc(void)
          uint uiLevelPercent = qlstrLineElement[11].toUInt(&bIsOK, 16);
 
          xlsx.selectSheet("FiltreGaugeValMin_10s");
-         xlsx.write(qu16IndiceInMin10s, 1, fTime);
-         xlsx.write(qu16IndiceInMin10s, 3, uiValMin10s);
-         xlsx.write(qu16IndiceInMin10s, 4, uiDeducedLevel);
-         xlsx.write(qu16IndiceInMin10s, 5, uiVariationTreatment);
-         xlsx.write(qu16IndiceInMin10s, 6, uiLevelPercent);
-         xlsx.write(qu16IndiceInMin10s, 7, qlstrLineElement[14]);
+         xlsx.write(qu32IndiceInMin10s, 1, fTime);
+         xlsx.write(qu32IndiceInMin10s, 3, uiValMin10s);
+         xlsx.write(qu32IndiceInMin10s, 4, uiDeducedLevel);
+         xlsx.write(qu32IndiceInMin10s, 5, uiVariationTreatment);
+         xlsx.write(qu32IndiceInMin10s, 6, uiLevelPercent);
+         xlsx.write(qu32IndiceInMin10s, 7, qlstrLineElement[14]);
 
          xlsx.selectSheet("FiltreGaugePasseBasValMin10");
-         xlsx.write(qu16IndiceInMin10s, 3, uiValMin10s);
+         xlsx.write(qu32IndiceInMin10s, 3, uiValMin10s);
 
-         qu16IndiceInMin10s++;
+         qu32IndiceInMin10s++;
       }
       else if(  (qlstrLineElement.size() > 3)
               &&(qlstrLineElement[3] == "102"))
@@ -398,14 +411,14 @@ void MainWindow::ExtractDataFromAsc(void)
          uint uiLevelPercent = qlstrLineElement[11].toUInt(&bIsOK, 16);
 
          xlsx.selectSheet("FiltreGaugeValMin_60s");
-         xlsx.write(qu16IndiceInMin60s, 1, fTime);
-         xlsx.write(qu16IndiceInMin60s, 3, uiValMin60s);
-         xlsx.write(qu16IndiceInMin60s, 4, uiDeducedLevel);
-         xlsx.write(qu16IndiceInMin60s, 5, uiVariationTreatment);
-         xlsx.write(qu16IndiceInMin60s, 6, uiLevelPercent);
-         xlsx.write(qu16IndiceInMin60s, 7, qlstrLineElement[14]);
+         xlsx.write(qu32IndiceInMin60s, 1, fTime);
+         xlsx.write(qu32IndiceInMin60s, 3, uiValMin60s);
+         xlsx.write(qu32IndiceInMin60s, 4, uiDeducedLevel);
+         xlsx.write(qu32IndiceInMin60s, 5, uiVariationTreatment);
+         xlsx.write(qu32IndiceInMin60s, 6, uiLevelPercent);
+         xlsx.write(qu32IndiceInMin60s, 7, qlstrLineElement[14]);
 
-         qu16IndiceInMin60s++;
+         qu32IndiceInMin60s++;
       }
       else if(  (qlstrLineElement.size() > 3)
               &&(qlstrLineElement[3] == "103"))
@@ -420,14 +433,39 @@ void MainWindow::ExtractDataFromAsc(void)
          uint uiLevelPercent = qlstrLineElement[12].toUInt(&bIsOK, 16);
 
          xlsx.selectSheet("FiltreGaugePasseBasValMin10");
-         xlsx.write(qu16IndiceInMinPB_10s, 1, fTime);
-         xlsx.write(qu16IndiceInMinPB_10s, 4, uiValueFiltered_10s);
-         xlsx.write(qu16IndiceInMinPB_10s, 5, uiDeducedLevel);
-         xlsx.write(qu16IndiceInMinPB_10s, 6, uiVariationTreatment);
-         xlsx.write(qu16IndiceInMinPB_10s, 7, uiLevelPercent);
-         xlsx.write(qu16IndiceInMinPB_10s, 8, qlstrLineElement[14]);
+         xlsx.write(qu32IndiceInMinPB_10s, 1, fTime);
+         xlsx.write(qu32IndiceInMinPB_10s, 4, uiValueFiltered_10s);
+         xlsx.write(qu32IndiceInMinPB_10s, 5, uiDeducedLevel);
+         xlsx.write(qu32IndiceInMinPB_10s, 6, uiVariationTreatment);
+         xlsx.write(qu32IndiceInMinPB_10s, 7, uiLevelPercent);
+         xlsx.write(qu32IndiceInMinPB_10s, 8, qlstrLineElement[14]);
 
-         qu16IndiceInMinPB_10s++;
+         qu32IndiceInMinPB_10s++;
+      }
+      else if(  (qlstrLineElement.size() > 3)
+              &&(qlstrLineElement[3] == "104"))
+      {
+         QString qstrInputValue(qlstrLineElement[7]);
+         qstrInputValue = qstrInputValue + qlstrLineElement[8];
+         uint uiValueFiltered_6s = qstrInputValue.toUInt(&bIsOK, 16);
+         qstrInputValue = qlstrLineElement[1];
+         float fTime = qstrInputValue.toFloat(&bIsOK);
+         qstrInputValue = qlstrLineElement[9] + qlstrLineElement[10];
+         uint uiValueStrongFiltered_6s = qstrInputValue.toUInt(&bIsOK, 16);
+         uint uiDeducedLevel = qlstrLineElement[11].toUInt(&bIsOK, 16);
+         uint uiVariationTreatment = qlstrLineElement[12].toUInt(&bIsOK, 16);
+         uint uiLevelPercent = qlstrLineElement[13].toUInt(&bIsOK, 16);
+
+         xlsx.selectSheet("FiltreGaugeDoubleFiltre_6s");
+         xlsx.write(qu32IndiceInDoublePB_6s, 1, fTime);
+         xlsx.write(qu32IndiceInDoublePB_6s, 3, uiValueFiltered_6s);
+         xlsx.write(qu32IndiceInDoublePB_6s, 4, uiValueStrongFiltered_6s);
+         xlsx.write(qu32IndiceInDoublePB_6s, 5, uiDeducedLevel);
+         xlsx.write(qu32IndiceInDoublePB_6s, 6, uiVariationTreatment);
+         xlsx.write(qu32IndiceInDoublePB_6s, 7, uiLevelPercent);
+         xlsx.write(qu32IndiceInDoublePB_6s, 8, qlstrLineElement[14]);
+
+         qu32IndiceInDoublePB_6s++;
       }
    }
 
